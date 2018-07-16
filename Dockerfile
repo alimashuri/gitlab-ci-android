@@ -9,13 +9,16 @@ FROM ubuntu:17.10
 MAINTAINER Jan Grewe <jan@faked.org>
 
 ENV VERSION_SDK_TOOLS "4333796"
-
+ENV FASTLANE_VERSION "2.99.1"
 ENV ANDROID_HOME "/sdk"
 ENV PATH "$PATH:${ANDROID_HOME}/tools"
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -qq update && \
     apt-get install -qqy --no-install-recommends \
+      build-essential \
+      ruby \
+      ruby-dev \
       bzip2 \
       curl \
       git-core \
@@ -46,9 +49,12 @@ RUN mkdir -p $ANDROID_HOME/licenses/ \
 ADD packages.txt /sdk
 RUN mkdir -p /root/.android && \
   touch /root/.android/repositories.cfg && \
-  ${ANDROID_HOME}/tools/bin/sdkmanager --update 
+  ${ANDROID_HOME}/tools/bin/sdkmanager --update
 
 RUN while read -r package; do PACKAGES="${PACKAGES}${package} "; done < /sdk/packages.txt && \
     ${ANDROID_HOME}/tools/bin/sdkmanager ${PACKAGES}
 
 RUN yes | ${ANDROID_HOME}/tools/bin/sdkmanager --licenses
+
+# Install fastlane
+RUN gem install fastlane -NV -v "$FASTLANE_VERSION"
